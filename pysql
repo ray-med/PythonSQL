@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+###############################################################################
+## PythonSQL-client v0.12 By Leo
+## Проблемы/задачи:
+## 1) Писать версию при подключении как psql?
+###############################################################################
+
+import socket
+import readline
+import argparse
+
+class PYSQL_SHELL:
+  def __init__(self):
+    self.history_file = '.pysql_history'
+    self.load_history()
+  
+  def load_history(self):
+    try:
+      readline.read_history_file(self.history_file)
+    except FileNotFoundError:
+      print('History file not found. Creating new one.')
+      
+  def save_history(self):
+    readline.write_history_file(self.history_file)
+      
+  def start_shell(self):
+    try:
+      # Подключаемся к серверу
+      client_socket.connect((server_ip, server_port))
+      
+      while True:
+        try:
+          prompt = 'pysql> ' # ПРОПИСАТЬ код получения от сервера имени БД из объекта dbconn
+          # 1) Принимаем от пользователя команду и отправляем её на сервер
+          command = input(prompt)
+          if len(command) == 0:
+            continue
+          else:
+            client_socket.sendall(command.encode('utf-8'))
+          
+          # 2) Получаем ответ от сервера
+          response = client_socket.recv(1024).decode('utf-8')
+          print(response)
+
+          # 3) Завершаем работу клиента, если необходимо
+          if command.lower() in ('exit', 'kill'):
+            break
+
+        except EOFError:
+          break
+                
+      self.save_history()
+
+    except ConnectionRefusedError:
+      print(f'''pysql: could not connect to server:
+            Is the server running locally and accepting
+            connections on Unix domain socket \"/tmp/.s.PYSQL.{server_port}\"?''')
+    finally:
+      # Закрываем соединение
+      client_socket.close()
+
+
+# ----------------- Config of client ------------------------------------------
+# Создаем объект парсера:
+parser = argparse.ArgumentParser(description='pysql is the PythonSQL interactive terminal.', add_help=False)
+
+# Добавляем аргументы коннекта:
+parser.add_argument('-h', '--host',     default='localhost', help='database server host or socket directory (default: "localhost")')
+parser.add_argument('-p', '--port',     default=2345,        help='database server port (default: "2345")')
+parser.add_argument('-U', '--username', default='pdba',      help='database user name')
+parser.add_argument('-d', '--dbname',   default='db0',       help='database name to connect to')
+# добавляем прочие аргументы:
+parser.add_argument('-c', '--command',  default=False,       help='run only single command and exit')
+parser.add_argument('-f', '--file',     default=False,       help='execute commands from file, then exit')
+parser.add_argument('-l', '--list',     default=False,       help='list available databases, then exit')
+parser.add_argument('-V', '--version',  default=False,       help='output version information, then exit')
+parser.add_argument('-?', '--help',     action='help',       help='show this help, then exit')
+
+# парсим аргументы:
+args = parser.parse_args()
+
+# Применяем аргументы:
+server_ip = args.host
+server_port = int(args.port)
+username = args.username
+dbname = args.dbname
+
+is_command = args.command
+is_file = args.file
+is_list = args.list
+is_version = args.version
+
+
+
+
+
+# ----------------- Startup of client -----------------------------------------
+# Создаем сокет
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Запускаем оболочку клиента pysql
+shell = PYSQL_SHELL()
+shell.start_shell()
