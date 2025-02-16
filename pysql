@@ -90,10 +90,6 @@ is_file = args.file
 is_list = args.list
 is_version = args.version
 
-
-
-
-
 # ----------------- Startup of client -----------------------------------------
 # Создаем сокет
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
